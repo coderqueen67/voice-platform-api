@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voice-platform-api
+  labels:
+    app: voice-platform-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: voice-platform-api
+  template:
+    metadata:
+      labels:
+        app: voice-platform-api
+    spec:
+      containers:
+        - name: api
+          image: gcr.io/YOUR_PROJECT_ID/voice-platform-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: voice-platform-config
+            - secretRef:
+                name: voice-platform-secret
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
